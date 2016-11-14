@@ -9,17 +9,19 @@ jQuery.entwine("simplelist", function($) {
 			$('#'+ holderID +'_heading').val( list.heading );
 			
 			// set list state
-			if ( (typeof list.enable !== 'undefined') && list.enable ) { console.log(1);
-				$('#'+ holderID +'_state').prop('checked', true);
-			}else{
-				$('#'+ holderID +'_state').prop('checked', false);
+			var cbState = $('#'+ holderID +'_state');
+			
+			cbState.prop('checked', true);
+			
+			if ( (typeof list.enable !== 'undefined') && !list.enable ) {
+				cbState.prop('checked', false);
 			}
 			
 			// sortable
 			$('#'+ holderID +'_wrapper').sortable( {
 				items: "> .dlf-fiedlist",
 				handle: '.dlf-sortable-handle',
-				update: function(e, ui){ SimpleListField.saveToHolder(holderID) },
+				update: function(){ SimpleListField.saveToHolder(holderID); },
 				start: function(e, ui){
 					$(this).find('textarea.slf-htmleditor').each(function(){
 						tinyMCE.execCommand( 'mceRemoveControl', false, $(this).attr('id') );
@@ -56,7 +58,7 @@ var SimpleListField = {
 	 */
 	add: function(holderID, item)
 	{
-		var itemID = ( (typeof item !== 'undefined') && item && (typeof item.id !== 'undefined') && item.id != '' ) ? item.id : this.generateID(6)
+		var itemID = ( (typeof item !== 'undefined') && item && (typeof item.id !== 'undefined') && item.id !== '' ) ? item.id : this.generateID(6);
 		var fields = jQuery('#'+ holderID).data('fields');
 		
 		var html   = '<div id="'+ holderID +'_dlf_item_'+ itemID +'" class="dlf-fiedlist">';
@@ -69,7 +71,7 @@ var SimpleListField = {
 				name: holderID +'_item['+ itemID +']['+ field.name +']',
 				id: holderID +'_item_'+ itemID +'_'+ field.name,
 				onblur: 'SimpleListField.saveToHolder(\''+ holderID +'\')'
-			}
+			};
 			
 			var value = (typeof item !== 'undefined' && typeof item[field.name] !== 'undefined') ? item[field.name] : ( typeof field.default_value !== 'undefined' ? field.default_value : '' );
 			
@@ -85,7 +87,7 @@ var SimpleListField = {
 					</div>';
 					
 					break;
-					
+				
 				case 'htmleditor':
 					html += '<div class="field slf-htmleditor simplelistfield-input dlf-input-wrapper">\
 						<label class="left" for="'+ attributes.id +'">'+ field.label +'</label>\
@@ -141,7 +143,7 @@ var SimpleListField = {
 						jQuery.each(field.list, function( option_value, option_label ) {
 							options += '<option value="'+ option_value +'" '+ ( option_value == value ? 'selected="selected"' : '' ) +'>'+ option_label +'</option>';
 						});
-					};
+					}
 					
 					html += '<div class="field textarea simplelistfield-dropdown simplelistfield-input dlf-input-wrapper">\
 						<label class="left" for="'+ attributes.id +'">'+ field.label +'</label>\
@@ -172,7 +174,13 @@ var SimpleListField = {
 		
 		jQuery(html).insertAfter(jQuery('#'+ holderID +'_dlf_heading'));
 		
-		jQuery('#'+ holderID +'_wrapper').sortable("refresh");
+		var holder = jQuery('#'+ holderID +'_wrapper');
+		
+		holder.sortable("refresh");
+		holder.find('select').addClass('has-chzn').chosen({
+			allow_single_deselect: true,
+			disable_search_threshold: 20
+		});
 	},
 	
 	/**
@@ -194,7 +202,7 @@ var SimpleListField = {
 	 */
 	saveToHolder: function(holderID)
 	{
-		var items = jQuery('.dlf-item-input').serializeJSON(),
+		var items = jQuery('.dlf-item-input').serializeJSON();
 			items = (typeof items !== 'undefined' && typeof items[holderID + '_item'] !== 'undefined') ? items[holderID + '_item'] : {};
 			
 		var holderEle = jQuery('#'+ holderID);
@@ -206,11 +214,6 @@ var SimpleListField = {
 			items: items
 		}));
 	},
-	
-	/**
-	 * Load to holder
-	 */
-	loadToHolder: function(holderID){},
 	
 	/**
 	 *

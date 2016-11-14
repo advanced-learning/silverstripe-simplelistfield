@@ -10,8 +10,18 @@ class SimpleListField extends TextareaField {
 	 */
 	private $scenario = null;
 	
+	/**
+	 * Constructor
+	 */
+	public function __construct($name, $title = null, $value = null) {
+		parent::__construct($name, $title, $value);
+		
+		// preload scenarios
+		self::preloadScenarios();
+	}
+	
 	/*
-	 *
+	 * @return Field
 	 */
 	public function Field($properties = array()) {
 		// Load TinyMCE if needed
@@ -83,7 +93,10 @@ class SimpleListField extends TextareaField {
 	/**
 	 * Get scenarios
 	 */
-	public function getScenarios($key = null){
+	public static function getScenarios($key = null){
+		// preload scenarios
+		self::preloadScenarios();
+		
 		return self::$scenarios;
 	}
 	
@@ -97,10 +110,42 @@ class SimpleListField extends TextareaField {
 	}
 	
 	/**
+	 * Add single scenario by using yml configuration
+	 */
+	public static function addScenarioFromYml($key){
+		$cfg = Config::inst()->get('SimpleListField', 'Scenarios');
+		
+		if( isset($cfg[$key]) ){
+			if( (isset($cfg[$key]['preload']) && !$cfg[$key]['preload']) || !isset($cfg[$key]['preload']) ){
+				self::$scenarios[$key] = $cfg[$key];
+			}
+		}
+	}
+	
+	/**
 	 * Set Scenario to use
 	 */
 	public function useScenario($scenarioName = null){
 		$this->scenario = $scenarioName;
 		return $this;
+	}
+	
+	/**
+	 * Preload scenarios
+	 */
+	protected static $preloaded_scenario = false;
+	
+	public static function preloadScenarios(){
+		if(self::$preloaded_scenario === false){
+			self::$preloaded_scenario = true;
+			
+			$scenarios = Config::inst()->get('SimpleListField', 'Scenarios');
+			
+			foreach($scenarios as $key => $val){
+				if( isset($val['preload']) && $val['preload'] ){
+					self::$scenarios[$key] = $val;
+				}
+			}
+		}
 	}
 }
