@@ -43,16 +43,20 @@ class SimpleListFieldDB extends Text{
 		
 		return ( isset($list->enable) && $list->enable );
 	}
-	
-	/**
-	 * Count items
-	 */
-	public function Count(){
-		$list = $this->getList();
-		
-		return ( isset($list->items) && !empty($list->items) ) ? count($list->items) : false;
-	}
-	
+
+    /**
+     * Count items
+     */
+    public function Count(){
+        $list = $this->getList();
+
+        return (
+            isset($list->items) &&
+            !empty($list->items) &&
+            (is_array($list->items) || $list->items instanceof Countable)
+        ) ? count($list->items) : false;
+    }
+
 	/**
 	 * Get list heading
 	 */
