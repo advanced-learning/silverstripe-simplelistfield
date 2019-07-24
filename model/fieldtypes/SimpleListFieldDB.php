@@ -47,14 +47,20 @@ class SimpleListFieldDB extends Text{
     /**
      * Count items
      */
-    public function Count(){
+    public function Count()
+    {
         $list = $this->getList();
 
-        return (
-            isset($list->items) &&
-            !empty($list->items) &&
-            (is_array($list->items) || $list->items instanceof Countable)
-        ) ? count($list->items) : false;
+        if (!isset($list->items) || empty($list->items)) {
+            return false;
+        }
+
+        $items = $list->items;
+        if (is_object($items)) {
+            $items = (array)$items;
+        }
+
+        return count($items);
     }
 
 	/**
